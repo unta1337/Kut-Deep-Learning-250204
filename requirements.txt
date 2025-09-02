@@ -1,0 +1,10 @@
+torch
+torchvision
+pandas
+scikit-learn
+matplotlib
+imageio
+graphviz
+torchviz
+wandb
+torchinfo
