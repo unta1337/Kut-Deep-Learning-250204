@@ -16,7 +16,7 @@ class TitanicDataset(Dataset):
     return len(self.X)
 
   def __getitem__(self, idx):
-    return self.X[idx], self.y[idx]
+    return self.X[idx], self.y[idx].unsqueeze(0)
 
   def __str__(self):
     str = "Data Size: {0}, Input Shape: {1}, Target Shape: {2}".format(
