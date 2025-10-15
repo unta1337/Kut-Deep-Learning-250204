@@ -16,9 +16,7 @@ class TitanicDataset(Dataset):
     return len(self.X)
 
   def __getitem__(self, idx):
-    feature = self.X[idx]
-    target = self.y[idx]
-    return {'input': feature, 'target': target}
+    return self.X[idx], self.y[idx]
 
   def __str__(self):
     str = "Data Size: {0}, Input Shape: {1}, Target Shape: {2}".format(
@@ -35,8 +33,7 @@ class TitanicTestDataset(Dataset):
     return len(self.X)
 
   def __getitem__(self, idx):
-    feature = self.X[idx]
-    return {'input': feature}
+    return self.X[idx]
 
   def __str__(self):
     str = "Data Size: {0}, Input Shape: {1}".format(
@@ -175,13 +172,13 @@ if __name__ == "__main__":
   test_data_loader = DataLoader(dataset=test_dataset, batch_size=len(test_dataset))
 
   print("[TRAIN]")
-  for idx, batch in enumerate(train_data_loader):
-    print("{0} - {1}: {2}".format(idx, batch['input'].shape, batch['target'].shape))
+  for idx, (batch_input, batch_target) in enumerate(train_data_loader):
+    print("{0} - {1}: {2}".format(idx, batch_input.shape, batch_target.shape))
 
   print("[VALIDATION]")
-  for idx, batch in enumerate(validation_data_loader):
-    print("{0} - {1}: {2}".format(idx, batch['input'].shape, batch['target'].shape))
+  for idx, (batch_input, batch_target) in enumerate(validation_data_loader):
+    print("{0} - {1}: {2}".format(idx, batch_input.shape, batch_target.shape))
 
   print("[TEST]")
-  for idx, batch in enumerate(test_data_loader):
-    print("{0} - {1}".format(idx, batch['input'].shape))
+  for idx, batch_input in enumerate(test_data_loader):
+    print("{0} - {1}".format(idx, batch_input.shape))
