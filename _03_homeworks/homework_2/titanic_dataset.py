@@ -65,19 +65,19 @@ def get_preprocessed_dataset():
 
     all_df = get_preprocessed_dataset_6(all_df)
 
-    print(all_df.columns)
-    print(all_df.head(10))
+    # print(all_df.columns)
+    # print(all_df.head(10))
 
     train_X = all_df[~all_df["Survived"].isnull()].drop("Survived", axis=1).reset_index(drop=True)
     train_y = train_df["Survived"]
 
     test_X = all_df[all_df["Survived"].isnull()].drop("Survived", axis=1).reset_index(drop=True)
     dataset = TitanicDataset(train_X.values, train_y.values)
-    print(dataset)
+    # print(dataset)
 
     train_dataset, validation_dataset = random_split(dataset, [0.8, 0.2])
     test_dataset = TitanicTestDataset(test_X.values)
-    #print(test_dataset)
+    # print(test_dataset)
 
     return train_dataset, validation_dataset, test_dataset
 
