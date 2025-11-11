@@ -6,7 +6,8 @@ import wandb
 from pathlib import Path
 
 from torch.utils.data import random_split, DataLoader, ConcatDataset
-from torchvision import datasets, transforms
+from torchvision import datasets
+from torchvision.transforms import v2
 
 BASE_PATH = str(Path(__file__).resolve().parent.parent.parent) # BASE_PATH: /Users/yhhan/git/link_dl
 import sys
@@ -20,29 +21,40 @@ if not os.path.isdir(CHECKPOINT_FILE_PATH):
 import sys
 sys.path.append(BASE_PATH)
 
-from _01_code._13_diverse_techniques.a_arg_parser import get_parser
-from _01_code._13_diverse_techniques.a_cifar10_train_cnn_with_normalization import \
-  get_cnn_model_with_dropout_and_batch_normalization, get_cnn_model_with_dropout_and_layer_normalization
 from _01_code._99_common_utils.utils import get_num_cpu_cores, is_linux, is_windows
 from _01_code._09_fcn_best_practice.c_trainer import ClassificationTrainer
 from _01_code._09_fcn_best_practice.h_cifar10_train_fcn import get_cifar10_data
-from _01_code._13_diverse_techniques.e_cifar10_train_cnn_with_dropout import get_cnn_model_with_dropout
-
+from _01_code._13_regularization.c_cifar10_train_cnn_with_dropout import get_cnn_model_with_dropout
+from _01_code._14_normalization.a_cifar10_train_cnn_with_normalization import \
+  get_cnn_model_with_dropout_and_batch_normalization, get_cnn_model_with_dropout_and_layer_normalization
+from _01_code._15_data_augmentation.a_arg_parser import get_parser
 
 def get_augmented_cifar10_data():
   data_path = os.path.join(BASE_PATH, "_00_data", "i_cifar10")
 
   print("DATA PATH: {0}".format(data_path))
 
-  cifar10_train = datasets.CIFAR10(data_path, train=True, download=True, transform=transforms.ToTensor())
+  cifar10_train = datasets.CIFAR10(data_path, train=True, download=True, transform=v2.ToTensor())
 
   cifar10_train, cifar10_validation = random_split(cifar10_train, [45_000, 5_000])
 
-  cifar10_train_transforms = nn.Sequential(
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomCrop([32, 32], padding=4),
-    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
-  )
+  cifar10_train_transforms = v2.Compose([
+    v2.RandomHorizontalFlip(),
+    v2.RandomCrop([32, 32], padding=4),
+    v2.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
+  ])
+
+  # cifar10_train_transforms = v2.Compose([
+  #   v2.RandomChoice([
+  #     v2.ColorJitter(brightness=0.3),
+  #     v2.RandomGrayscale(p=0.5)
+  #   ]),
+  #   v2.RandomApply([
+  #     v2.RandomHorizontalFlip(),
+  #     v2.RandomVerticalFlip()
+  #   ], p=0.4),
+  #   v2.ToTensor(),
+  # ])
 
   transformed_train_data = []
   for image, label in cifar10_train:
@@ -67,10 +79,10 @@ def get_augmented_cifar10_data():
     pin_memory=True, num_workers=num_data_loading_workers
   )
 
-  cifar10_transforms = nn.Sequential(
-    transforms.ConvertImageDtype(torch.float),
-    transforms.Normalize(mean=(0.4915, 0.4823, 0.4468), std=(0.2470, 0.2435, 0.2616)),
-  )
+  cifar10_transforms = v2.Compose([
+    v2.ConvertImageDtype(torch.float),
+    v2.Normalize(mean=(0.4915, 0.4823, 0.4468), std=(0.2470, 0.2435, 0.2616)),
+  ])
 
   return train_data_loader, validation_data_loader, cifar10_transforms
 
@@ -151,6 +163,6 @@ if __name__ == "__main__":
   parser = get_parser()
   args = parser.parse_args()
   main(args)
-  # python _01_code/_13_diverse_techniques/b_cifar10_train_cnn_with_image_augmentation_and_batch_normalization.py --wandb --dropout --augment -v 1 -o 3 -w 0.002 -n 1
-  # python _01_code/_13_diverse_techniques/b_cifar10_train_cnn_with_image_augmentation_and_batch_normalization.py --wandb --dropout --no-augment -v 1 -o 3 -w 0.002 -n 1
+  # python _01_code/_15_data_augmentation/a_cifar10_train_cnn_with_image_augmentation_and_batch_normalization.py --wandb --dropout --augment -v 1 -o 3 -w 0.002 -n 1
+  # python _01_code/_15_data_augmentation/a_cifar10_train_cnn_with_image_augmentation_and_batch_normalization.py --wandb --dropout --no-augment -v 1 -o 3 -w 0.002 -n 1
 
