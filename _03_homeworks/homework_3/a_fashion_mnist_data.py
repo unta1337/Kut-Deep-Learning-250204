@@ -30,28 +30,15 @@ def get_fashion_mnist_data():
         print(f'f_mnist_train:')
         print(f'    mean: {train_imgs.view(1, -1).mean()}')
         print(f'    std:  {train_imgs.view(1, -1).std()}')
-
-        validation_imgs = torch.stack([i for i, _ in f_mnist_validation], dim=3)
-        print(f'f_mnist_validation:')
-        print(f'    mean: {validation_imgs.view(1, -1).mean()}')
-        print(f'    std:  {validation_imgs.view(1, -1).std()}')
-
-        print('[INFO] Calculating mean, std done. quitting...')
-        exit(0)
     else:
         # f_mnist_train:
         #     mean: 0.28632092475891113
         #     std:  0.353121280670166
-        # f_mnist_validation:
-        #     mean: 0.28295737504959106
-        #     std:  0.3519405126571655
         train_stat = (0.28632092475891113, 0.353121280670166)
-        validation_stat = (0.28295737504959106, 0.3519405126571655)
 
     print("Num Train Samples: ", len(f_mnist_train))
     print("Num Validation Samples: ", len(f_mnist_validation))
     print(f"Stat Train Samples: (mean, std): {train_stat}")
-    print(f"Stat Validation Samples: (mean, std): {validation_stat}")
     print("Sample Data Shape: ", f_mnist_train[0][0].shape)  # torch.Size([1, 28, 28])
     print("Sample Data Target: ", f_mnist_train[0][1])  # 9
 
@@ -68,17 +55,12 @@ def get_fashion_mnist_data():
         pin_memory=True, num_workers=num_data_loading_workers
     )
 
-    f_mnist_train_transforms = nn.Sequential(
+    f_mnist_transforms = nn.Sequential(
         transforms.ConvertImageDtype(torch.float),
         transforms.Normalize(mean=train_stat[0], std=train_stat[1]),
     )
 
-    f_mnist_validation_transforms = nn.Sequential(
-        transforms.ConvertImageDtype(torch.float),
-        transforms.Normalize(mean=validation_stat[0], std=validation_stat[1]),
-    )
-
-    return train_data_loader, validation_data_loader, f_mnist_train_transforms, f_mnist_validation_transforms
+    return train_data_loader, validation_data_loader, f_mnist_transforms
 
 
 def get_fashion_mnist_test_data():
@@ -120,7 +102,7 @@ if __name__ == "__main__":
     config = {'batch_size': 2048, }
     wandb.init(mode="disabled", config=config)
 
-    train_data_loader, validation_data_loader, f_mnist_train_transforms, f_mnist_validation_transforms = get_fashion_mnist_data()
+    train_data_loader, validation_data_loader, f_mnist_transforms = get_fashion_mnist_data()
     print()
     f_mnist_test_images, test_data_loader, f_mnist_transforms = get_fashion_mnist_test_data()
 
