@@ -24,8 +24,34 @@ def get_fashion_mnist_data():
     f_mnist_train = datasets.FashionMNIST(data_path, train=True, download=True, transform=transforms.ToTensor())
     f_mnist_train, f_mnist_validation = random_split(f_mnist_train, [55_000, 5_000])
 
+    # mean std
+    if False:
+        train_imgs = torch.stack([i for i, _ in f_mnist_train], dim=3)
+        print(f'f_mnist_train:')
+        print(f'    mean: {train_imgs.view(1, -1).mean()}')
+        print(f'    std:  {train_imgs.view(1, -1).std()}')
+
+        validation_imgs = torch.stack([i for i, _ in f_mnist_validation], dim=3)
+        print(f'f_mnist_validation:')
+        print(f'    mean: {validation_imgs.view(1, -1).mean()}')
+        print(f'    std:  {validation_imgs.view(1, -1).std()}')
+
+        print('[INFO] Calculating mean, std done. quitting...')
+        exit(0)
+    else:
+        # f_mnist_train:
+        #     mean: 0.28632092475891113
+        #     std:  0.353121280670166
+        # f_mnist_validation:
+        #     mean: 0.28295737504959106
+        #     std:  0.3519405126571655
+        train_stat = (0.28632092475891113, 0.353121280670166)
+        validation_stat = (0.28295737504959106, 0.3519405126571655)
+
     print("Num Train Samples: ", len(f_mnist_train))
     print("Num Validation Samples: ", len(f_mnist_validation))
+    print(f"Stat Train Samples: (mean, std): {train_stat}")
+    print(f"Stat Validation Samples: (mean, std): {validation_stat}")
     print("Sample Data Shape: ", f_mnist_train[0][0].shape)  # torch.Size([1, 28, 28])
     print("Sample Data Target: ", f_mnist_train[0][1])  # 9
 
@@ -42,12 +68,17 @@ def get_fashion_mnist_data():
         pin_memory=True, num_workers=num_data_loading_workers
     )
 
-    f_mnist_transforms = nn.Sequential(
+    f_mnist_train_transforms = nn.Sequential(
         transforms.ConvertImageDtype(torch.float),
-        transforms.Normalize(mean=0.0, std=0.1),
+        transforms.Normalize(mean=train_stat[0], std=train_stat[1]),
     )
 
-    return train_data_loader, validation_data_loader, f_mnist_transforms
+    f_mnist_validation_transforms = nn.Sequential(
+        transforms.ConvertImageDtype(torch.float),
+        transforms.Normalize(mean=validation_stat[0], std=validation_stat[1]),
+    )
+
+    return train_data_loader, validation_data_loader, f_mnist_train_transforms, f_mnist_validation_transforms
 
 
 def get_fashion_mnist_test_data():
@@ -56,7 +87,23 @@ def get_fashion_mnist_test_data():
     f_mnist_test_images = datasets.FashionMNIST(data_path, train=False, download=True)
     f_mnist_test = datasets.FashionMNIST(data_path, train=False, download=True, transform=transforms.ToTensor())
 
+    # mean std
+    if False:
+        test_imgs = torch.stack([i for i, _ in f_mnist_test], dim=3)
+        print(f'f_mnist_test:')
+        print(f'    mean: {test_imgs.view(1, -1).mean()}')
+        print(f'    std:  {test_imgs.view(1, -1).std()}')
+
+        print('[INFO] Calculating mean, std done. quitting...')
+        exit(0)
+    else:
+        # f_mnist_train:
+        #     mean: 0.2868492901325226
+        #     std:  0.3524441719055176
+        test_stat = (0.2868492901325226, 0.3524441719055176)
+
     print("Num Test Samples: ", len(f_mnist_test))
+    print(f"Stat Test Samples: (mean, std): {test_stat}")
     print("Sample Shape: ", f_mnist_test[0][0].shape)  # torch.Size([1, 28, 28])
 
     test_data_loader = DataLoader(dataset=f_mnist_test, batch_size=len(f_mnist_test))
@@ -73,6 +120,8 @@ if __name__ == "__main__":
     config = {'batch_size': 2048, }
     wandb.init(mode="disabled", config=config)
 
-    train_data_loader, validation_data_loader, f_mnist_transforms = get_fashion_mnist_data()
+    train_data_loader, validation_data_loader, f_mnist_train_transforms, f_mnist_validation_transforms = get_fashion_mnist_data()
     print()
     f_mnist_test_images, test_data_loader, f_mnist_transforms = get_fashion_mnist_test_data()
+
+    print('[INFO] done')
