@@ -92,7 +92,7 @@ def get_fashion_mnist_test_data():
 
     f_mnist_transforms = nn.Sequential(
         transforms.ConvertImageDtype(torch.float),
-        transforms.Normalize(mean=0.0, std=0.1),
+        transforms.Normalize(mean=test_stat[0], std=test_stat[1]),
     )
 
     return f_mnist_test_images, test_data_loader, f_mnist_transforms
