@@ -4,9 +4,9 @@ import torch
 import wandb
 from torch import nn
 
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, random_split, ConcatDataset
 from torchvision import datasets
-from torchvision.transforms import transforms
+from torchvision.transforms import transforms, v2
 
 BASE_PATH = str(Path(__file__).resolve().parent.parent.parent)  # BASE_PATH: /Users/yhhan/git/link_dl
 print(BASE_PATH)
@@ -24,12 +24,25 @@ def get_fashion_mnist_data():
     f_mnist_train = datasets.FashionMNIST(data_path, train=True, download=True, transform=transforms.ToTensor())
     f_mnist_train, f_mnist_validation = random_split(f_mnist_train, [55_000, 5_000])
 
+    if True:
+        img_transform = v2.Compose([
+            v2.RandomHorizontalFlip(),
+            v2.RandomCrop([28, 28], padding=4),
+        ])
+
+        transformed_f_mnist_train = []
+        for img, label in f_mnist_train:
+            timg = img_transform(img)
+            transformed_f_mnist_train.append((timg, label))
+        f_mnist_train = ConcatDataset([f_mnist_train, transformed_f_mnist_train])
+
     # mean std
-    if False:
+    if True:
         train_imgs = torch.stack([i for i, _ in f_mnist_train], dim=3)
+        train_stat = (train_imgs.view(1, -1).mean(), train_imgs.view(1, -1).std())
         print(f'f_mnist_train:')
-        print(f'    mean: {train_imgs.view(1, -1).mean()}')
-        print(f'    std:  {train_imgs.view(1, -1).std()}')
+        print(f'    mean: {train_stat[0]}')
+        print(f'    std:  {train_stat[1]}')
     else:
         # f_mnist_train:
         #     mean: 0.28632092475891113
