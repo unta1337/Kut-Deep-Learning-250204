@@ -7,7 +7,7 @@ from torchvision import datasets
 from torchvision.transforms import transforms, v2
 from torchvision.transforms.functional import to_pil_image
 
-BASE_PATH = '/home/ksy/develop/Kut-Deep-Learning-250204'
+BASE_PATH = '/home/ksy/Develop/Kut-Deep-Learning-250204'
 
 f_mnist_path = os.path.join(BASE_PATH, "_00_data", "j_fashion_mnist")
 f_mnist_train_data = datasets.FashionMNIST(f_mnist_path, train=True, download=True)
